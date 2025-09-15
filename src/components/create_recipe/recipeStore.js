@@ -5,9 +5,23 @@ export const useRecipeStore = create((set) => ({
   description: "",
   prepTime: "",
   cookTime: "",
-  ingredients: [],
-  steps: [],
 
+  // Initialize with two ingredients
+  ingredients: [
+    { id: Date.now().toString() + "-1", text: "", type: "ingredient" },
+    { id: Date.now().toString() + "-2", text: "", type: "ingredient" },
+  ],
+
+  // Initialize with one step
+  steps: [
+    {
+      id: Date.now().toString() + "-step1",
+      type: "step", // <-- make sure this exists
+      name: "",
+      text: "",
+      images: [],
+    },
+  ],
   // --- Basic fields ---
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
@@ -17,7 +31,6 @@ export const useRecipeStore = create((set) => ({
   // --- Steps (instructions) ---
   setSteps: (updater) =>
     set((state) => {
-      // support either array or function(prev) => newArray
       const newSteps =
         typeof updater === "function" ? updater(state.steps || []) : updater;
       return { steps: newSteps || [] };
