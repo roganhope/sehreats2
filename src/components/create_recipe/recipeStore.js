@@ -1,31 +1,30 @@
+// src/store/useRecipeStore.js
 import { create } from "zustand";
 
+// Simple global counter for stable IDs
+let idCounter = 0;
+const generateId = () => `item-${++idCounter}`;
+
 export const useRecipeStore = create((set) => ({
+  // --- Basic fields ---
   name: "",
   description: "",
   prepTime: "",
   cookTime: "",
 
-  // Tags
+  // --- Tags ---
+  tags: [],
 
-  // Initialize with two ingredients
+  // --- Ingredients (initialize with two) ---
   ingredients: [
-    { id: Date.now().toString() + "-1", text: "", type: "ingredient" },
-    { id: Date.now().toString() + "-2", text: "", type: "ingredient" },
+    { id: generateId(), text: "", type: "ingredient" },
+    { id: generateId(), text: "", type: "ingredient" },
   ],
 
-  // Initialize with one step
-  steps: [
-    {
-      id: Date.now().toString() + "-step1",
-      type: "step",
-      name: "",
-      text: "",
-      images: [],
-    },
-  ],
+  // --- Steps (instructions, initialize with one) ---
+  steps: [{ id: generateId(), type: "step", name: "", text: "", images: [] }],
 
-  // --- Basic fields ---
+  // --- Setters for basic fields ---
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
   setPrepTimeISO: (iso) => set({ prepTime: iso }),
@@ -34,7 +33,25 @@ export const useRecipeStore = create((set) => ({
   // --- Tags ---
   setTags: (tags) => set({ tags: tags || [] }),
 
-  // --- Steps (instructions) ---
+  // --- Ingredients ---
+  setIngredients: (ingredients) => set({ ingredients: ingredients || [] }),
+
+  updateIngredientText: (id, text) =>
+    set((state) => ({
+      ingredients: (state.ingredients || []).map((ingredient) =>
+        ingredient.id === id ? { ...ingredient, text } : ingredient
+      ),
+    })),
+
+  addIngredient: (type = "ingredient") =>
+    set((state) => ({
+      ingredients: [
+        ...(state.ingredients || []),
+        { id: generateId(), text: "", type },
+      ],
+    })),
+
+  // --- Steps ---
   setSteps: (updater) =>
     set((state) => {
       const newSteps =
@@ -49,6 +66,21 @@ export const useRecipeStore = create((set) => ({
       ),
     })),
 
+  addStep: (stepData = {}) =>
+    set((state) => ({
+      steps: [
+        ...(state.steps || []),
+        {
+          id: generateId(),
+          type: "step",
+          name: "",
+          text: "",
+          images: [],
+          ...stepData,
+        },
+      ],
+    })),
+
   addImageToStep: (stepId, image) =>
     set((state) => ({
       steps: (state.steps || []).map((step) =>
@@ -57,15 +89,4 @@ export const useRecipeStore = create((set) => ({
           : step
       ),
     })),
-
-  // --- Ingredients ---
-  setIngredients: (ingredients) => set({ ingredients: ingredients || [] }),
-  updateIngredientText: (id, text) =>
-    set((state) => ({
-      ingredients: (state.ingredients || []).map((ingredient) =>
-        ingredient.id === id ? { ...ingredient, text } : ingredient
-      ),
-    })),
-
-  tags: [], // <-- selected tags
 }));

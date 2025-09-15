@@ -9,13 +9,7 @@ const RecipeIngredients = () => {
   const updateIngredientText = useRecipeStore(
     (state) => state.updateIngredientText
   );
-
-  // Generic add function, supports type
-  const addItem = (type = "ingredient") =>
-    setIngredients([
-      ...ingredients,
-      { id: Date.now().toString(), text: "", type },
-    ]);
+  const addIngredient = useRecipeStore((state) => state.addIngredient);
 
   return (
     <div style={{ maxWidth: "400px", margin: "40px auto" }}>
@@ -52,7 +46,7 @@ const RecipeIngredients = () => {
 
       <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
         <button
-          onClick={() => addItem("ingredient")}
+          onClick={() => addIngredient("ingredient")}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",
@@ -64,7 +58,7 @@ const RecipeIngredients = () => {
           + Ingredient
         </button>
         <button
-          onClick={() => addItem("subtitle")}
+          onClick={() => addIngredient("subtitle")}
           style={{
             padding: "8px 16px",
             borderRadius: "4px",

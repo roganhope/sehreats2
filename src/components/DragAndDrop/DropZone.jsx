@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useRef } from "react";
 import {
   DndContext,
   closestCenter,
@@ -81,3 +81,15 @@ const DropZone = ({ items = [], setItems, childrenRenderer }) => {
 };
 
 export default DropZone;
+
+/**
+ * ✅ Custom hook for stable item IDs
+ * Use inside parent components that want to create new draggable items
+ */
+export const useItemFactory = () => {
+  const idCounter = useRef(0);
+  return (baseData = {}) => {
+    idCounter.current += 1;
+    return { id: `item-${idCounter.current}`, ...baseData };
+  };
+};

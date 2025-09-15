@@ -7,13 +7,14 @@ import { useRecipeStore } from "../recipeStore";
 const InstructionsContainer = () => {
   const steps = useRecipeStore((state) => state.steps || []);
   const setSteps = useRecipeStore((state) => state.setSteps);
-  const updateStepText = useRecipeStore((state) => state.updateStepText);
+  const updateStep = useRecipeStore((state) => state.updateStepText);
+  const addStep = useRecipeStore((state) => state.addStep);
 
-  const addItem = (type = "step") =>
-    setSteps((prev = []) => [
-      ...prev,
-      { id: Date.now().toString(), type, name: "", text: "", images: [] },
-    ]);
+  const setImages = (stepId, newImages) => {
+    setSteps((prev = []) =>
+      prev.map((s) => (s.id === stepId ? { ...s, images: newImages } : s))
+    );
+  };
 
   return (
     <div style={{ maxWidth: "500px", margin: "40px auto" }}>
@@ -23,13 +24,7 @@ const InstructionsContainer = () => {
         items={steps}
         setItems={setSteps}
         childrenRenderer={(item, index) => {
-          const setStepImages = (newImages) => {
-            setSteps((prev = []) =>
-              prev.map((s) =>
-                s.id === item.id ? { ...s, images: newImages } : s
-              )
-            );
-          };
+          const stepImagesSetter = (newImgs) => setImages(item.id, newImgs);
 
           return (
             <div
@@ -40,80 +35,34 @@ const InstructionsContainer = () => {
                 marginBottom: "12px",
               }}
             >
-              {item.type === "step" && <strong>Step {index + 1}</strong>}
-              {item.type === "subtitle" && <strong>Subtitle</strong>}
+              <strong>Step {index + 1}</strong>
 
               <input
                 type="text"
                 value={item.name || ""}
-                onChange={(e) =>
-                  updateStepText(item.id, { name: e.target.value })
-                }
-                placeholder={
-                  item.type === "subtitle" ? "Subtitle Name..." : "Step Name..."
-                }
-                style={{
-                  padding: "4px 8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  fontWeight: item.type === "subtitle" ? "bold" : "normal",
-                }}
+                onChange={(e) => updateStep(item.id, { name: e.target.value })}
+                placeholder="Step Name..."
               />
 
-              {item.type === "step" && (
-                <textarea
-                  value={item.text || ""}
-                  onChange={(e) =>
-                    updateStepText(item.id, { text: e.target.value })
-                  }
-                  placeholder="Instruction details..."
-                  rows={2}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "4px",
-                    border: "1px solid #ccc",
-                    resize: "vertical",
-                  }}
-                />
-              )}
+              <textarea
+                value={item.text || ""}
+                onChange={(e) => updateStep(item.id, { text: e.target.value })}
+                placeholder="Instruction details..."
+                rows={2}
+              />
 
-              {item.type === "step" && (
-                <ImageUploadDropzone
-                  images={item.images || []}
-                  setImages={setStepImages}
-                  maxImages={5}
-                />
-              )}
+              <ImageUploadDropzone
+                images={item.images || []}
+                setImages={stepImagesSetter}
+                maxImages={5}
+              />
             </div>
           );
         }}
       />
 
-      <div style={{ marginTop: "12px", display: "flex", gap: "8px" }}>
-        <button
-          onClick={() => addItem("step")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "4px",
-            border: "1px solid #888",
-            backgroundColor: "#f0f0f0",
-            cursor: "pointer",
-          }}
-        >
-          + Step
-        </button>
-        <button
-          onClick={() => addItem("subtitle")}
-          style={{
-            padding: "8px 16px",
-            borderRadius: "4px",
-            border: "1px solid #888",
-            backgroundColor: "#f0f0f0",
-            cursor: "pointer",
-          }}
-        >
-          + Subtitle
-        </button>
+      <div style={{ marginTop: "12px" }}>
+        <button onClick={() => addStep()}>+ Step</button>
       </div>
     </div>
   );
