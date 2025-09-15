@@ -6,6 +6,18 @@ let idCounter = 0;
 const generateId = () => `item-${++idCounter}`;
 
 export const useRecipeStore = create((set) => ({
+  mainImage: null, // main image URL
+  mainAlt: "", // main image alt text
+  setMainImage: (img) => set({ mainImage: img }),
+  setMainAlt: (alt) => set({ mainAlt: alt }),
+
+  // --- Cropped images ---
+  croppedImages: {}, // { "16x9": "url", "4x3": "url", "2x3": "url" }
+  setCroppedImage: (cropId, url) =>
+    set((state) => ({
+      croppedImages: { ...state.croppedImages, [cropId]: url },
+    })),
+
   // --- Basic fields ---
   name: "",
   description: "",

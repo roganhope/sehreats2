@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import Cropper from "react-easy-crop";
 import { FiImage } from "react-icons/fi";
+import { useRecipeStore } from "./recipeStore";
+import getCroppedImg from "@/utils/getCroppedImg"; // helper to get cropped image from canvas
 
 const cropConfigs = [
   { id: "16x9", aspect: 16 / 9, label: "16:9 (SEO / Hero)" },
@@ -11,14 +13,16 @@ const cropConfigs = [
 ];
 
 export default function ImageUploadAndCrop() {
-  const [original, setOriginal] = useState(null);
+  const mainImage = useRecipeStore((state) => state.mainImage);
+  const setMainImage = useRecipeStore((state) => state.setMainImage);
+  const mainAlt = useRecipeStore((state) => state.mainAlt);
+  const setMainAlt = useRecipeStore((state) => state.setMainAlt);
+  const setCroppedImage = useRecipeStore((state) => state.setCroppedImage);
+
   const [crops, setCrops] = useState({});
-  const [zoom, setZoom] = useState({
-    "16x9": 1,
-    "4x3": 1,
-    "2x3": 1,
-  });
-  const [customImages, setCustomImages] = useState({}); // stores per-crop override
+  const [zoom, setZoom] = useState({ "16x9": 1, "4x3": 1, "2x3": 1 });
+  const [customImages, setCustomImages] = useState({});
+  const [altTexts, setAltTexts] = useState({});
 
   const handleFiles = (files, cropId = null) => {
     const file = files[0];
@@ -26,13 +30,8 @@ export default function ImageUploadAndCrop() {
 
     const preview = URL.createObjectURL(file);
 
-    if (cropId) {
-      // Replace specific crop
-      setCustomImages((prev) => ({ ...prev, [cropId]: preview }));
-    } else {
-      // Main image
-      setOriginal(preview);
-    }
+    if (cropId) setCustomImages((prev) => ({ ...prev, [cropId]: preview }));
+    else setMainImage(preview);
   };
 
   const handleDrop = (e, cropId = null) => {
@@ -79,34 +78,64 @@ export default function ImageUploadAndCrop() {
     </div>
   );
 
+  const handleCropComplete = async (cropId, croppedAreaPixels, image) => {
+    const croppedUrl = await getCroppedImg(image, croppedAreaPixels);
+    setCroppedImage(cropId, croppedUrl);
+  };
+
   return (
     <div style={{ display: "grid", gap: "2rem" }}>
-      {/* Main image upload */}
-      {!original && renderDropzone(null)}
+      {!mainImage && renderDropzone(null)}
 
-      {/* Croppers */}
-      {original &&
+      {mainImage && (
+        <div style={{ marginBottom: "1rem" }}>
+          <label
+            htmlFor="mainAlt"
+            style={{ display: "block", marginBottom: "0.25rem" }}
+          >
+            Main image alt text:
+          </label>
+          <input
+            id="mainAlt"
+            type="text"
+            value={mainAlt}
+            onChange={(e) => setMainAlt(e.target.value)}
+            placeholder="Describe this image for SEO and accessibility"
+            style={{
+              width: "100%",
+              padding: "0.5rem",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </div>
+      )}
+
+      {mainImage &&
         cropConfigs.map((cfg) => {
-          const imageToUse = customImages[cfg.id] || original;
+          const imageToUse = customImages[cfg.id] || mainImage;
           const containerWidth = 800;
           const containerHeight = containerWidth / cfg.aspect;
+          const altValue = altTexts[cfg.id] ?? mainAlt;
 
           return (
             <div key={cfg.id} style={{ width: "100%", marginBottom: "2rem" }}>
-              <div style={{ marginBottom: "0.5rem" }}>
-                <strong>{cfg.label}</strong>{" "}
-                <button
-                  style={{ marginLeft: "1rem" }}
-                  onClick={() => renderDropzone(cfg.id)}
-                >
+              <div
+                style={{
+                  marginBottom: "0.5rem",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "1rem",
+                }}
+              >
+                <strong>{cfg.label}</strong>
+                <button onClick={() => renderDropzone(cfg.id)}>
                   Change image
                 </button>
               </div>
 
-              {/* Dropzone for replacing crop */}
               {!customImages[cfg.id] && renderDropzone(cfg.id)}
 
-              {/* Cropper */}
               <div
                 style={{
                   width: "100%",
@@ -131,11 +160,35 @@ export default function ImageUploadAndCrop() {
                     setZoom((prev) => ({ ...prev, [cfg.id]: z }))
                   }
                   onCropComplete={(croppedArea, croppedAreaPixels) =>
-                    setCrops((prev) => ({
+                    handleCropComplete(cfg.id, croppedAreaPixels, imageToUse)
+                  }
+                />
+              </div>
+
+              <div style={{ marginTop: "0.5rem" }}>
+                <label
+                  htmlFor={`alt-${cfg.id}`}
+                  style={{ display: "block", marginBottom: "0.25rem" }}
+                >
+                  Alt text (override main image):
+                </label>
+                <input
+                  id={`alt-${cfg.id}`}
+                  type="text"
+                  value={altValue}
+                  onChange={(e) =>
+                    setAltTexts((prev) => ({
                       ...prev,
-                      [cfg.id]: { ...prev[cfg.id], croppedAreaPixels },
+                      [cfg.id]: e.target.value,
                     }))
                   }
+                  placeholder="Describe this image for SEO and accessibility"
+                  style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
                 />
               </div>
             </div>
