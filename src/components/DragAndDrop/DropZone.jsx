@@ -14,11 +14,11 @@ import {
 } from "@dnd-kit/sortable";
 import DraggableContainer from "./DraggableContainer";
 
-const DropZone = ({ items, setItems, childrenRenderer }) => {
-  // Ensure items is always an array
-  const safeItems = Array.isArray(items) ? items : [];
-
+const DropZone = ({ items = [], setItems, childrenRenderer }) => {
   const sensors = useSensors(useSensor(PointerSensor));
+
+  // Safe wrapper to ensure items is always an array
+  const safeItems = Array.isArray(items) ? items : [];
 
   const handleDragEnd = (event) => {
     const { active, over } = event;
@@ -62,6 +62,18 @@ const DropZone = ({ items, setItems, childrenRenderer }) => {
               {childrenRenderer(item, index)}
             </DraggableContainer>
           ))}
+
+          {safeItems.length === 0 && (
+            <div
+              style={{
+                textAlign: "center",
+                color: "#888",
+                padding: "40px 0",
+              }}
+            >
+              No items. Drag here or use buttons to add.
+            </div>
+          )}
         </div>
       </SortableContext>
     </DndContext>
