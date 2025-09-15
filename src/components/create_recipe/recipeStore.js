@@ -6,6 +6,8 @@ export const useRecipeStore = create((set) => ({
   prepTime: "",
   cookTime: "",
 
+  // Tags
+
   // Initialize with two ingredients
   ingredients: [
     { id: Date.now().toString() + "-1", text: "", type: "ingredient" },
@@ -16,17 +18,21 @@ export const useRecipeStore = create((set) => ({
   steps: [
     {
       id: Date.now().toString() + "-step1",
-      type: "step", // <-- make sure this exists
+      type: "step",
       name: "",
       text: "",
       images: [],
     },
   ],
+
   // --- Basic fields ---
   setName: (name) => set({ name }),
   setDescription: (description) => set({ description }),
   setPrepTimeISO: (iso) => set({ prepTime: iso }),
   setCookTimeISO: (iso) => set({ cookTime: iso }),
+
+  // --- Tags ---
+  setTags: (tags) => set({ tags: tags || [] }),
 
   // --- Steps (instructions) ---
   setSteps: (updater) =>
@@ -60,4 +66,6 @@ export const useRecipeStore = create((set) => ({
         ingredient.id === id ? { ...ingredient, text } : ingredient
       ),
     })),
+
+  tags: [], // <-- selected tags
 }));

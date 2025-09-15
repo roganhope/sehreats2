@@ -5,6 +5,8 @@ import { useRecipeStore } from "./recipeStore";
 import RecipeDescription from "./RecipeDescription";
 import RecipeTime from "./RecipeTime";
 import InstructionsContainer from "./Instructions/InstructionsContainer";
+import SelectTags from "./SelectTags";
+
 import RecipeIngredients from "./RecipeIngredients";
 const CreateRecipeContainer = () => {
   const store = useRecipeStore(); // get the entire store
@@ -23,6 +25,7 @@ const CreateRecipeContainer = () => {
       <RecipeTime />
       <RecipeIngredients />
       <InstructionsContainer />
+      <SelectTags />
     </div>
   );
 };
