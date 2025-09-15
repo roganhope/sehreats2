@@ -1,7 +1,7 @@
 // src/store/useRecipeStore.js
 import { create } from "zustand";
 
-// Simple global counter for stable IDs
+// Global counter for stable IDs
 let idCounter = 0;
 const generateId = () => `item-${++idCounter}`;
 
@@ -15,13 +15,13 @@ export const useRecipeStore = create((set) => ({
   // --- Tags ---
   tags: [],
 
-  // --- Ingredients (initialize with two) ---
+  // --- Ingredients (initialize with two normal ingredients) ---
   ingredients: [
     { id: generateId(), text: "", type: "ingredient" },
     { id: generateId(), text: "", type: "ingredient" },
   ],
 
-  // --- Steps (instructions, initialize with one) ---
+  // --- Steps (instructions, initialize with one normal step) ---
   steps: [{ id: generateId(), type: "step", name: "", text: "", images: [] }],
 
   // --- Setters for basic fields ---
@@ -47,7 +47,7 @@ export const useRecipeStore = create((set) => ({
     set((state) => ({
       ingredients: [
         ...(state.ingredients || []),
-        { id: generateId(), text: "", type },
+        { id: generateId(), text: "", type }, // "ingredient" or "subtitle"
       ],
     })),
 
@@ -66,18 +66,13 @@ export const useRecipeStore = create((set) => ({
       ),
     })),
 
-  addStep: (stepData = {}) =>
+  addStep: (stepType = "step") =>
     set((state) => ({
       steps: [
         ...(state.steps || []),
-        {
-          id: generateId(),
-          type: "step",
-          name: "",
-          text: "",
-          images: [],
-          ...stepData,
-        },
+        stepType === "subtitle"
+          ? { id: generateId(), type: "subtitle", text: "" } // subtitle: only text
+          : { id: generateId(), type: "step", name: "", text: "", images: [] }, // normal step
       ],
     })),
 

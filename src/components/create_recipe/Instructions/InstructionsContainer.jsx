@@ -17,8 +17,8 @@ const InstructionsContainer = () => {
   };
 
   return (
-    <div style={{ maxWidth: "500px", margin: "40px auto" }}>
-      <h2>Recipe Instructions</h2>
+    <div className="max-w-lg mx-auto my-10">
+      <h2 className="text-xl font-semibold mb-4">Recipe Instructions</h2>
 
       <DropZone
         items={steps}
@@ -26,14 +26,31 @@ const InstructionsContainer = () => {
         childrenRenderer={(item, index) => {
           const stepImagesSetter = (newImgs) => setImages(item.id, newImgs);
 
+          // Render differently if it's a subtitle
+          if (item.type === "subtitle") {
+            return (
+              <div
+                className="flex items-center mb-4 p-2 bg-gray-100 rounded"
+                key={item.id}
+              >
+                <input
+                  type="text"
+                  value={item.text || ""}
+                  onChange={(e) =>
+                    updateStep(item.id, { text: e.target.value })
+                  }
+                  placeholder="Subtitle..."
+                  className="flex-1 font-bold px-2 py-1 border rounded"
+                />
+              </div>
+            );
+          }
+
+          // Normal step
           return (
             <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "6px",
-                marginBottom: "12px",
-              }}
+              key={item.id}
+              className="flex flex-col gap-2 mb-4 border rounded p-3 bg-gray-50"
             >
               <strong>Step {index + 1}</strong>
 
@@ -42,6 +59,7 @@ const InstructionsContainer = () => {
                 value={item.name || ""}
                 onChange={(e) => updateStep(item.id, { name: e.target.value })}
                 placeholder="Step Name..."
+                className="border rounded px-2 py-1"
               />
 
               <textarea
@@ -49,6 +67,7 @@ const InstructionsContainer = () => {
                 onChange={(e) => updateStep(item.id, { text: e.target.value })}
                 placeholder="Instruction details..."
                 rows={2}
+                className="border rounded px-2 py-1"
               />
 
               <ImageUploadDropzone
@@ -61,8 +80,19 @@ const InstructionsContainer = () => {
         }}
       />
 
-      <div style={{ marginTop: "12px" }}>
-        <button onClick={() => addStep()}>+ Step</button>
+      <div className="flex gap-2 mt-4">
+        <button
+          onClick={() => addStep("step")}
+          className="px-4 py-2 rounded border bg-gray-200 hover:bg-gray-300"
+        >
+          + Step
+        </button>
+        <button
+          onClick={() => addStep("subtitle")}
+          className="px-4 py-2 rounded border bg-gray-200 hover:bg-gray-300"
+        >
+          + Subtitle
+        </button>
       </div>
     </div>
   );
