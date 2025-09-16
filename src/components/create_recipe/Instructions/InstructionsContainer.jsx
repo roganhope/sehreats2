@@ -1,7 +1,8 @@
 "use client";
+
 import React from "react";
 import DropZone from "../../DragAndDrop/DropZone";
-import ImageUploadDropzone from "../../ImageUpload/ImageUploadDropZone";
+import StepImageUploader from "./StepImageUploader";
 import { useRecipeStore } from "../recipeStore";
 
 const InstructionsContainer = () => {
@@ -10,7 +11,8 @@ const InstructionsContainer = () => {
   const updateStep = useRecipeStore((state) => state.updateStepText);
   const addStep = useRecipeStore((state) => state.addStep);
 
-  const setImages = (stepId, newImages) => {
+  // helper to update images for a specific step
+  const setStepImages = (stepId, newImages) => {
     setSteps((prev = []) =>
       prev.map((s) => (s.id === stepId ? { ...s, images: newImages } : s))
     );
@@ -24,14 +26,14 @@ const InstructionsContainer = () => {
         items={steps}
         setItems={setSteps}
         childrenRenderer={(item, index) => {
-          const stepImagesSetter = (newImgs) => setImages(item.id, newImgs);
+          const stepImagesSetter = (newImgs) => setStepImages(item.id, newImgs);
 
-          // Render differently if it's a subtitle
+          // subtitle
           if (item.type === "subtitle") {
             return (
               <div
-                className="flex items-center mb-4 p-2 bg-gray-100 rounded"
                 key={item.id}
+                className="flex items-center mb-4 p-2 bg-gray-100 rounded"
               >
                 <input
                   type="text"
@@ -46,7 +48,7 @@ const InstructionsContainer = () => {
             );
           }
 
-          // Normal step
+          // normal step
           return (
             <div
               key={item.id}
@@ -70,7 +72,8 @@ const InstructionsContainer = () => {
                 className="border rounded px-2 py-1"
               />
 
-              <ImageUploadDropzone
+              {/* Image uploader for this step */}
+              <StepImageUploader
                 images={item.images || []}
                 setImages={stepImagesSetter}
                 maxImages={5}

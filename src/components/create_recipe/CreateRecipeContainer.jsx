@@ -20,7 +20,7 @@ const CreateRecipeContainer = () => {
       <pre className="mb-4 p-2 bg-gray-100 rounded text-sm">
         {JSON.stringify(store, null, 2)}
       </pre>
-      <StepImageUploader />
+      {/* <StepImageUploader /> */}
       {/* <ImageUploadAndCrop /> */}
 
       <RecipeName />

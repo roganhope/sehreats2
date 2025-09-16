@@ -3,24 +3,23 @@
 import React, { useCallback, useState } from "react";
 import { FiImage } from "react-icons/fi";
 import Cropper from "react-easy-crop";
-import getCroppedImg from "@/utils/getCroppedImg"; // alias import
+import getCroppedImg from "@/utils/getCroppedImg";
 
 const StepImageUploader = ({
   images: propImages,
   setImages: propSetImages,
   maxImages = 5,
 }) => {
-  // internal state fallback
+  // fallback to internal state if no props provided
   const [internalImages, setInternalImages] = useState([]);
   const images = propImages || internalImages;
   const setImages = propSetImages || setInternalImages;
 
-  const [cropModal, setCropModal] = useState(null); // { file, preview }
+  const [cropModal, setCropModal] = useState(null);
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
 
-  // handle files from drop or select
   const handleFiles = useCallback((files) => {
     if (!files.length) return;
     const file = files[0];
@@ -33,11 +32,8 @@ const StepImageUploader = ({
     handleFiles(e.dataTransfer.files);
   };
 
-  const handleFileSelect = (e) => {
-    handleFiles(e.target.files);
-  };
+  const handleFileSelect = (e) => handleFiles(e.target.files);
 
-  // save cropped image
   const handleCropSave = async () => {
     if (!cropModal || !croppedAreaPixels) return;
 
@@ -69,6 +65,14 @@ const StepImageUploader = ({
     setImages(
       images.map((img) => (img.id === id ? { ...img, [field]: value } : img))
     );
+  };
+
+  // Drag & drop reordering
+  const handleReorder = (fromIndex, toIndex) => {
+    const newImages = [...images];
+    const [moved] = newImages.splice(fromIndex, 1);
+    newImages.splice(toIndex, 0, moved);
+    setImages(newImages);
   };
 
   return (
@@ -105,15 +109,26 @@ const StepImageUploader = ({
         </div>
       )}
 
-      {/* Image list */}
-      {images.map((img) => (
+      {/* Image list with manual drag handle */}
+      {images.map((img, idx) => (
         <div
           key={img.id}
+          draggable
+          onDragStart={(e) => e.dataTransfer.setData("text/plain", idx)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            const fromIndex = parseInt(
+              e.dataTransfer.getData("text/plain"),
+              10
+            );
+            handleReorder(fromIndex, idx);
+          }}
           style={{
             display: "grid",
             gridTemplateColumns: "100px 1fr",
             gap: "1rem",
             alignItems: "start",
+            cursor: "grab",
           }}
         >
           <div
