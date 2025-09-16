@@ -1,43 +1,52 @@
-/**
- * Generates a cropped image URL from an image and crop area.
- * @param {string} imageSrc - The source URL of the image
- * @param {object} crop - Cropped area pixels { x, y, width, height }
- * @returns {Promise<string>} - Object URL of the cropped image
- */
-export default function getCroppedImg(imageSrc, crop) {
+// src/utils/getCroppedImg.js
+export default function getCroppedImg(imageSrc, croppedAreaPixels) {
   return new Promise((resolve, reject) => {
     const image = new Image();
+    image.crossOrigin = "anonymous"; // allow cross-origin if needed
     image.src = imageSrc;
-    image.crossOrigin = "anonymous"; // handle CORS if needed
 
     image.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = crop.width;
-      canvas.height = crop.height;
-      const ctx = canvas.getContext("2d");
+      try {
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
 
-      ctx.drawImage(
-        image,
-        crop.x,
-        crop.y,
-        crop.width,
-        crop.height,
-        0,
-        0,
-        crop.width,
-        crop.height
-      );
+        if (!ctx) return reject(new Error("Failed to get canvas context"));
 
-      canvas.toBlob((blob) => {
-        if (!blob) {
-          reject(new Error("Canvas is empty"));
-          return;
-        }
-        const croppedImageUrl = URL.createObjectURL(blob);
-        resolve(croppedImageUrl);
-      }, "image/jpeg"); // JPEG for universal compatibility
+        const { width, height, x, y } = croppedAreaPixels;
+
+        if (width <= 0 || height <= 0)
+          return reject(new Error("Canvas is empty"));
+
+        // Set canvas to cropped area size
+        canvas.width = width;
+        canvas.height = height;
+
+        // Use naturalWidth/naturalHeight to scale correctly
+        const scaleX = image.naturalWidth / image.width;
+        const scaleY = image.naturalHeight / image.height;
+
+        ctx.drawImage(
+          image,
+          x * scaleX,
+          y * scaleY,
+          width * scaleX,
+          height * scaleY,
+          0,
+          0,
+          width,
+          height
+        );
+
+        canvas.toBlob((blob) => {
+          if (!blob) return reject(new Error("Canvas is empty"));
+          const croppedImageUrl = URL.createObjectURL(blob);
+          resolve(croppedImageUrl);
+        }, "image/jpeg");
+      } catch (err) {
+        reject(err);
+      }
     };
 
-    image.onerror = (err) => reject(err);
+    image.onerror = () => reject(new Error("Failed to load image"));
   });
 }

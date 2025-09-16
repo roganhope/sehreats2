@@ -8,6 +8,7 @@ import InstructionsContainer from "./Instructions/InstructionsContainer";
 import SelectTags from "./SelectTags";
 import ImageUploadAndCrop from "./ImageUploadAndCrop";
 import RecipeIngredients from "./RecipeIngredients";
+import StepImageUploader from "./Instructions/StepImageUploader";
 const CreateRecipeContainer = () => {
   const store = useRecipeStore(); // get the entire store
 
@@ -19,7 +20,8 @@ const CreateRecipeContainer = () => {
       <pre className="mb-4 p-2 bg-gray-100 rounded text-sm">
         {JSON.stringify(store, null, 2)}
       </pre>
-      <ImageUploadAndCrop />
+      <StepImageUploader />
+      {/* <ImageUploadAndCrop /> */}
 
       <RecipeName />
       <RecipeDescription />
